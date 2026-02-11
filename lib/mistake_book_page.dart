@@ -193,7 +193,7 @@ class _MistakeBookPageState extends State<MistakeBookPage> {
           } else if (_errors.containsKey(index)) {
             return Center(
               child: Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(0.0),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -212,7 +212,7 @@ class _MistakeBookPageState extends State<MistakeBookPage> {
               ),
             );
           } else if (_maxCount != null && index >= _maxCount!) {
-             return Center(child: Text(AppLocalizations.of(context)!.noMoreRecords));
+              return Center(child: Text(AppLocalizations.of(context)!.noMoreRecords));
           } else {
             // Trigger load if not already loading (though onPageChanged handles most cases)
             _ensureDataLoaded(index);
@@ -389,7 +389,6 @@ class _MistakeQuestionViewState extends State<MistakeQuestionView> with Automati
                       elevation: 0,
                     ),
                   ),
-                  const SizedBox(height: 12),
                   if (_showImage)
                     Card(
                       elevation: 0,
@@ -397,7 +396,7 @@ class _MistakeQuestionViewState extends State<MistakeQuestionView> with Automati
                         borderRadius: BorderRadius.circular(16),
                         side: BorderSide(color: Colors.grey[200]!),
                       ),
-                      margin: const EdgeInsets.only(bottom: 24.0),
+                      margin: const EdgeInsets.only(bottom: 0.0),
                       clipBehavior: Clip.antiAlias,
                       color: Colors.white,
                       child: Column(
@@ -463,9 +462,9 @@ class _MistakeQuestionViewState extends State<MistakeQuestionView> with Automati
               side: BorderSide(color: Colors.grey[200]!),
             ),
             color: Colors.white,
-            margin: const EdgeInsets.only(bottom: 16.0),
+            margin: const EdgeInsets.only(bottom: 0.0),
             child: Padding(
-              padding: const EdgeInsets.all(24.0),
+              padding: const EdgeInsets.all(12.0),
               child: Text(
                 title,
                 style: const TextStyle(
@@ -532,7 +531,7 @@ class _MistakeQuestionViewState extends State<MistakeQuestionView> with Automati
               side: BorderSide(color: Colors.grey[200]!),
             ),
             color: Colors.white,
-            margin: const EdgeInsets.only(bottom: 16.0),
+            margin: const EdgeInsets.only(bottom: 0.0),
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 8.0),
               child: Column(
@@ -641,7 +640,6 @@ class _MistakeQuestionViewState extends State<MistakeQuestionView> with Automati
                       elevation: 0,
                     ),
                   ),
-                  const SizedBox(height: 12),
                   if (_showAnalysisImage)
                     Card(
                       elevation: 0,
@@ -649,7 +647,7 @@ class _MistakeQuestionViewState extends State<MistakeQuestionView> with Automati
                         borderRadius: BorderRadius.circular(16),
                         side: BorderSide(color: Colors.grey[200]!),
                       ),
-                      margin: const EdgeInsets.only(bottom: 24.0),
+                      margin: const EdgeInsets.only(bottom: 0.0),
                       clipBehavior: Clip.antiAlias,
                       color: Colors.white,
                       child: Column(
@@ -751,7 +749,6 @@ class _MistakeQuestionViewState extends State<MistakeQuestionView> with Automati
                             elevation: 0,
                           ),
                         ),
-                        const SizedBox(height: 12),
                         if (_showKnowledgePointImage)
                           Card(
                             elevation: 0,
@@ -759,7 +756,7 @@ class _MistakeQuestionViewState extends State<MistakeQuestionView> with Automati
                               borderRadius: BorderRadius.circular(16),
                               side: BorderSide(color: Colors.grey[200]!),
                             ),
-                            margin: const EdgeInsets.only(bottom: 24.0),
+                            margin: const EdgeInsets.only(bottom: 0.0),
                             clipBehavior: Clip.antiAlias,
                             color: Colors.white,
                             child: Column(
@@ -835,7 +832,8 @@ class _MistakeQuestionViewState extends State<MistakeQuestionView> with Automati
       '_nc_m2m_错题集_知识点s',
       '小节',
       'options',
-      '解析按钮'
+      '解析按钮',
+      'correct'
     ];
     children.addAll(
       widget.row.entries.where((entry) => !keys.contains(entry.key)).map((
@@ -848,9 +846,9 @@ class _MistakeQuestionViewState extends State<MistakeQuestionView> with Automati
             side: BorderSide(color: Colors.grey[200]!),
           ),
           color: Colors.white,
-          margin: const EdgeInsets.only(bottom: 16.0),
+          margin: const EdgeInsets.only(bottom: 0.0),
           child: Padding(
-            padding: const EdgeInsets.all(20.0),
+            padding: const EdgeInsets.all(0.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -863,7 +861,6 @@ class _MistakeQuestionViewState extends State<MistakeQuestionView> with Automati
                     letterSpacing: 0.5,
                   ),
                 ),
-                const SizedBox(height: 12),
                 Text(
                   entry.value.toString(),
                   style: const TextStyle(
@@ -880,7 +877,6 @@ class _MistakeQuestionViewState extends State<MistakeQuestionView> with Automati
     );
 
     return ListView(
-      padding: const EdgeInsets.all(24.0),
       children: children,
     );
   }
