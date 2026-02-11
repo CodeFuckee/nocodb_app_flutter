@@ -1,0 +1,22 @@
+{
+  "appTitle": "NocoDB App",
+  "settings": "Settings",
+  "mistakeBook": "Mistake Book",
+  "nocodbUrl": "NocoDB URL",
+  "apiToken": "API Token",
+  "mistakeBookTableId": "Mistake Book Table ID",
+  "save": "Save",
+  "settingsSaved": "Settings saved",
+  "previous": "Previous",
+  "next": "Next",
+  "offset": "Offset",
+  "retry": "Retry",
+  "noMoreRecords": "No more records or empty table.",
+  "errorPrefix": "Error: ",
+  "nocodbUrlHint": "https://app.nocodb.com",
+  "ignoreSsl": "Ignore SSL Verification",
+  "language": "Language",
+  "systemDefault": "System Default",
+  "english": "English",
+  "chinese": "Chinese"
+}

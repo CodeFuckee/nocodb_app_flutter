@@ -1,0 +1,22 @@
+{
+  "appTitle": "NocoDB 应用",
+  "settings": "设置",
+  "mistakeBook": "错题本",
+  "nocodbUrl": "NocoDB 网址",
+  "apiToken": "API 令牌",
+  "mistakeBookTableId": "错题本表 ID",
+  "save": "保存",
+  "settingsSaved": "设置已保存",
+  "previous": "上一题",
+  "next": "下一题",
+  "offset": "偏移量",
+  "retry": "重试",
+  "noMoreRecords": "没有更多记录或表为空。",
+  "errorPrefix": "错误: ",
+  "nocodbUrlHint": "https://app.nocodb.com",
+  "ignoreSsl": "忽略 SSL 证书验证",
+  "language": "语言",
+  "systemDefault": "系统默认",
+  "english": "英语",
+  "chinese": "中文"
+}
