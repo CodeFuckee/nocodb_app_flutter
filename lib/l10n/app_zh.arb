@@ -5,6 +5,7 @@
   "nocodbUrl": "NocoDB 网址",
   "apiToken": "API 令牌",
   "mistakeBookTableId": "错题本表 ID",
+  "mistakeBookViewId": "错题本视图 ID",
   "save": "保存",
   "settingsSaved": "设置已保存",
   "previous": "上一题",

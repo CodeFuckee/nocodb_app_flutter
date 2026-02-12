@@ -10,6 +10,7 @@ class NocoDBService {
     final String? baseUrl = prefs.getString('nocodb_url');
     final String? apiToken = prefs.getString('nocodb_token');
     final String? tableId = prefs.getString('nocodb_table_id');
+    final String? viewId = prefs.getString('nocodb_view_id');
     final bool ignoreSsl = prefs.getBool('nocodb_ignore_ssl') ?? false;
 
     if (baseUrl == null || baseUrl.isEmpty ||
@@ -23,7 +24,11 @@ class NocoDBService {
         ? baseUrl.substring(0, baseUrl.length - 1)
         : baseUrl;
 
-    final url = Uri.parse('$cleanBaseUrl/api/v2/tables/$tableId/records?offset=$offset&limit=$limit');
+    String urlString = '$cleanBaseUrl/api/v2/tables/$tableId/records?offset=$offset&limit=$limit';
+    if (viewId != null && viewId.isNotEmpty) {
+      urlString += '&viewId=$viewId';
+    }
+    final url = Uri.parse(urlString);
     
     http.Client client;
     if (ignoreSsl) {

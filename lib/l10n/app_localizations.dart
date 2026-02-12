@@ -134,6 +134,12 @@ abstract class AppLocalizations {
   /// **'Mistake Book Table ID'**
   String get mistakeBookTableId;
 
+  /// No description provided for @mistakeBookViewId.
+  ///
+  /// In en, this message translates to:
+  /// **'Mistake Book View ID'**
+  String get mistakeBookViewId;
+
   /// No description provided for @save.
   ///
   /// In en, this message translates to:

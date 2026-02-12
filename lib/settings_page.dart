@@ -18,6 +18,7 @@ class _SettingsPageState extends State<SettingsPage> {
   final _urlController = TextEditingController();
   final _tokenController = TextEditingController();
   final _tableIdController = TextEditingController();
+  final _viewIdController = TextEditingController();
   bool _isLoading = true;
   bool _ignoreSsl = false;
   String? _appVersion;
@@ -36,6 +37,7 @@ class _SettingsPageState extends State<SettingsPage> {
       _urlController.text = prefs.getString('nocodb_url') ?? '';
       _tokenController.text = prefs.getString('nocodb_token') ?? '';
       _tableIdController.text = prefs.getString('nocodb_table_id') ?? '';
+      _viewIdController.text = prefs.getString('nocodb_view_id') ?? '';
       _ignoreSsl = prefs.getBool('nocodb_ignore_ssl') ?? false;
       _appVersion = '${packageInfo.version}+${packageInfo.buildNumber}';
       _isLoading = false;
@@ -47,6 +49,7 @@ class _SettingsPageState extends State<SettingsPage> {
     await prefs.setString('nocodb_url', _urlController.text);
     await prefs.setString('nocodb_token', _tokenController.text);
     await prefs.setString('nocodb_table_id', _tableIdController.text);
+    await prefs.setString('nocodb_view_id', _viewIdController.text);
     await prefs.setBool('nocodb_ignore_ssl', _ignoreSsl);
     if (mounted) {
       NotifyUtils.showNotify(context, AppLocalizations.of(context)!.settingsSaved);
@@ -66,6 +69,7 @@ class _SettingsPageState extends State<SettingsPage> {
     _urlController.dispose();
     _tokenController.dispose();
     _tableIdController.dispose();
+    _viewIdController.dispose();
     super.dispose();
   }
 
@@ -78,10 +82,11 @@ class _SettingsPageState extends State<SettingsPage> {
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
+          : SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
                   TextField(
                     controller: _urlController,
                     decoration: const InputDecoration(
@@ -105,6 +110,14 @@ class _SettingsPageState extends State<SettingsPage> {
                     controller: _tableIdController,
                     decoration: InputDecoration(
                       labelText: AppLocalizations.of(context)!.mistakeBookTableId,
+                      border: const OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: _viewIdController,
+                    decoration: InputDecoration(
+                      labelText: AppLocalizations.of(context)!.mistakeBookViewId,
                       border: const OutlineInputBorder(),
                     ),
                   ),
@@ -173,6 +186,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 ],
               ),
             ),
+          ),
     );
   }
 }

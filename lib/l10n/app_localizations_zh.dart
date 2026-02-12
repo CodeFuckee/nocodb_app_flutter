@@ -27,6 +27,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get mistakeBookTableId => '错题本表 ID';
 
   @override
+  String get mistakeBookViewId => '错题本视图 ID';
+
+  @override
   String get save => '保存';
 
   @override

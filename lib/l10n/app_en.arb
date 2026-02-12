@@ -5,6 +5,7 @@
   "nocodbUrl": "NocoDB URL",
   "apiToken": "API Token",
   "mistakeBookTableId": "Mistake Book Table ID",
+  "mistakeBookViewId": "Mistake Book View ID",
   "save": "Save",
   "settingsSaved": "Settings saved",
   "previous": "Previous",

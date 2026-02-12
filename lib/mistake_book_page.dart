@@ -355,7 +355,8 @@ class _MistakeQuestionViewState extends State<MistakeQuestionView> with Automati
     super.build(context); // Required for AutomaticKeepAliveClientMixin
     List<Widget> children = [];
 
-    // Check for '题目' field and display image if available
+    // Extract question image path first
+    String? questionImageSignedPath;
     if (widget.row.containsKey('题目')) {
       final questionData = widget.row['题目'];
       if (questionData is List && questionData.isNotEmpty) {
@@ -363,121 +364,87 @@ class _MistakeQuestionViewState extends State<MistakeQuestionView> with Automati
         if (firstItem is Map && firstItem.containsKey('signedPath')) {
           final String? signedPath = firstItem['signedPath'];
           if (signedPath != null && signedPath.isNotEmpty) {
-            children.add(
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  OutlinedButton.icon(
-                    onPressed: () {
-                      setState(() {
-                        _showImage = !_showImage;
-                      });
-                    },
-                    icon: Icon(
-                      _showImage ? Icons.visibility_off : Icons.visibility,
-                      size: 18,
-                    ),
-                    label: Text(_showImage ? '隐藏题目图片' : '显示题目图片'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.grey[700],
-                      backgroundColor: Colors.white,
-                      side: BorderSide(color: Colors.grey[300]!),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 0,
-                    ),
-                  ),
-                  if (_showImage)
-                    Card(
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        side: BorderSide(color: Colors.grey[200]!),
-                      ),
-                      margin: const EdgeInsets.only(bottom: 0.0),
-                      clipBehavior: Clip.antiAlias,
-                      color: Colors.white,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => FullScreenImagePage(
-                                    imageUrl: (widget.baseUrl != null
-                                            ? '${widget.baseUrl}/'
-                                            : '') +
-                                        signedPath,
-                                  ),
-                                ),
-                              );
-                            },
-                            child: Image.network(
-                              (widget.baseUrl != null ? '${widget.baseUrl}/' : '') +
-                                  signedPath,
-                              width: double.infinity,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return const Padding(
-                                  padding: EdgeInsets.all(12.0),
-                                  child: Text('无法加载图片'),
-                                );
-                              },
-                              loadingBuilder:
-                                  (context, child, loadingProgress) {
-                                if (loadingProgress == null) return child;
-                                return const Center(
-                                  child: Padding(
-                                    padding: EdgeInsets.all(12.0),
-                                    child: CircularProgressIndicator(),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                ],
-              ),
-            );
+            questionImageSignedPath = signedPath;
           }
         }
       }
     }
 
-    // Process Title
+    // Process Title and Question Image
     if (widget.row.containsKey('Title') && widget.row['Title'] != null) {
       final String title = widget.row['Title'].toString();
       if (title.isNotEmpty) {
-        children.add(
-          Card(
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-              side: BorderSide(color: Colors.grey[200]!),
-            ),
-            color: Colors.white,
-            margin: const EdgeInsets.only(bottom: 0.0),
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                  height: 1.5,
-                  color: Colors.black87,
-                  letterSpacing: -0.5,
-                ),
+        Widget content;
+
+        if (_showImage && questionImageSignedPath != null) {
+          content = Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Image.network(
+                (widget.baseUrl != null ? '${widget.baseUrl}/' : '') +
+                    questionImageSignedPath,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return const Padding(
+                    padding: EdgeInsets.all(12.0),
+                    child: Text('无法加载图片'),
+                  );
+                },
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(12.0),
+                      child: CircularProgressIndicator(),
+                    ),
+                  );
+                },
+              ),
+            ],
+          );
+        } else {
+          content = Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Text(
+              title,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                height: 1.5,
+                color: Colors.black87,
+                letterSpacing: -0.5,
               ),
             ),
+          );
+        }
+
+        Widget card = Card(
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(color: Colors.white),
           ),
+          color: Colors.white,
+          margin: const EdgeInsets.only(bottom: 0.0),
+          clipBehavior: Clip.antiAlias,
+          child: content,
         );
+
+        if (questionImageSignedPath != null) {
+          children.add(
+            GestureDetector(
+              onTap: () {
+                setState(() {
+                  _showImage = !_showImage;
+                });
+              },
+              child: card,
+            ),
+          );
+        } else {
+          children.add(card);
+        }
       }
     }
 
@@ -528,7 +495,7 @@ class _MistakeQuestionViewState extends State<MistakeQuestionView> with Automati
             elevation: 0,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
-              side: BorderSide(color: Colors.grey[200]!),
+              side: BorderSide(color: Colors.white),
             ),
             color: Colors.white,
             margin: const EdgeInsets.only(bottom: 0.0),
@@ -632,7 +599,7 @@ class _MistakeQuestionViewState extends State<MistakeQuestionView> with Automati
                     style: OutlinedButton.styleFrom(
                       foregroundColor: Colors.grey[700],
                       backgroundColor: Colors.white,
-                      side: BorderSide(color: Colors.grey[300]!),
+                      side: BorderSide(color: Colors.white),
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -645,7 +612,7 @@ class _MistakeQuestionViewState extends State<MistakeQuestionView> with Automati
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
-                        side: BorderSide(color: Colors.grey[200]!),
+                        side: BorderSide(color: Colors.white),
                       ),
                       margin: const EdgeInsets.only(bottom: 0.0),
                       clipBehavior: Clip.antiAlias,
@@ -741,7 +708,7 @@ class _MistakeQuestionViewState extends State<MistakeQuestionView> with Automati
                           style: OutlinedButton.styleFrom(
                             foregroundColor: Colors.grey[700],
                             backgroundColor: Colors.white,
-                            side: BorderSide(color: Colors.grey[300]!),
+                            side: BorderSide(color: Colors.white),
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -754,7 +721,7 @@ class _MistakeQuestionViewState extends State<MistakeQuestionView> with Automati
                             elevation: 0,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
-                              side: BorderSide(color: Colors.grey[200]!),
+                              side: BorderSide(color: Colors.white),
                             ),
                             margin: const EdgeInsets.only(bottom: 0.0),
                             clipBehavior: Clip.antiAlias,
@@ -843,7 +810,7 @@ class _MistakeQuestionViewState extends State<MistakeQuestionView> with Automati
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
-            side: BorderSide(color: Colors.grey[200]!),
+            side: BorderSide(color: Colors.white),
           ),
           color: Colors.white,
           margin: const EdgeInsets.only(bottom: 0.0),

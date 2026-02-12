@@ -27,6 +27,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mistakeBookTableId => 'Mistake Book Table ID';
 
   @override
+  String get mistakeBookViewId => 'Mistake Book View ID';
+
+  @override
   String get save => 'Save';
 
   @override
