@@ -110,7 +110,7 @@ class _MistakeBookPageState extends State<MistakeBookPage> {
             } else {
               // Automatically try to preload next batch if this is the first batch
               if (batchStart == 0) {
-                 _loadBatch(_batchSize);
+                  _loadBatch(_batchSize);
               }
             }
           }
@@ -124,7 +124,7 @@ class _MistakeBookPageState extends State<MistakeBookPage> {
           for (int i = 0; i < _batchSize; i++) {
              // Only mark if we haven't reached maxCount (we don't know maxCount yet properly if error)
              // But reasonable to mark them.
-             _errors[batchStart + i] = e.toString();
+              _errors[batchStart + i] = e.toString();
           }
         });
       }
@@ -479,12 +479,7 @@ class _MistakeQuestionViewState extends State<MistakeQuestionView> with Automati
         optionsMap = {};
         for (var item in optionsData) {
           if (item is String) {
-            var parts = item.split('. ');
-            if (parts.length > 1) {
-              optionsMap[parts[0]] = parts.sublist(1).join('. ');
-            } else {
-              optionsMap[item] = item;
-            }
+            optionsMap[item] = item;
           }
         }
       }
