@@ -569,96 +569,100 @@ class _MistakeQuestionViewState extends State<MistakeQuestionView> with Automati
     if (widget.row.containsKey('解析')) {
       final analysisData = widget.row['解析'];
       if (analysisData is List && analysisData.isNotEmpty) {
-        final firstItem = analysisData.first;
-        if (firstItem is Map && firstItem.containsKey('signedPath')) {
-          final String? signedPath = firstItem['signedPath'];
-          if (signedPath != null && signedPath.isNotEmpty) {
-            children.add(
-              Column(
-                key: _analysisKey,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  OutlinedButton.icon(
-                    onPressed: () {
-                      setState(() {
-                        _showAnalysisImage = !_showAnalysisImage;
-                      });
-                    },
-                    icon: Icon(
-                      _showAnalysisImage
-                          ? Icons.visibility_off
-                          : Icons.visibility,
-                      size: 18,
-                    ),
-                    label: Text(_showAnalysisImage ? '隐藏解析图片' : '显示解析图片'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.grey[700],
-                      backgroundColor: Colors.white,
-                      side: BorderSide(color: Colors.white),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+        final List<Widget> imageWidgets = [];
+        for (var item in analysisData) {
+          if (item is Map && item.containsKey('signedPath')) {
+            final String? signedPath = item['signedPath'];
+            if (signedPath != null && signedPath.isNotEmpty) {
+              final imageUrl = (widget.baseUrl != null ? '${widget.baseUrl}/' : '') + signedPath;
+              imageWidgets.add(
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => FullScreenImagePage(
+                          imageUrl: imageUrl,
+                        ),
                       ),
-                      elevation: 0,
+                    );
+                  },
+                  child: Image.network(
+                    imageUrl,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Padding(
+                        padding: EdgeInsets.all(12.0),
+                        child: Text('无法加载图片'),
+                      );
+                    },
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(12.0),
+                          child: CircularProgressIndicator(),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              );
+              imageWidgets.add(const SizedBox(height: 12));
+            }
+          }
+        }
+
+        if (imageWidgets.isNotEmpty) {
+          // Remove the last SizedBox
+          if (imageWidgets.isNotEmpty) imageWidgets.removeLast();
+
+          children.add(
+            Column(
+              key: _analysisKey,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                OutlinedButton.icon(
+                  onPressed: () {
+                    setState(() {
+                      _showAnalysisImage = !_showAnalysisImage;
+                    });
+                  },
+                  icon: Icon(
+                    _showAnalysisImage ? Icons.visibility_off : Icons.visibility,
+                    size: 18,
+                  ),
+                  label: Text(_showAnalysisImage ? '隐藏解析图片' : '显示解析图片'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.grey[700],
+                    backgroundColor: Colors.white,
+                    side: const BorderSide(color: Colors.white),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 0,
+                  ),
+                ),
+                if (_showAnalysisImage)
+                  Card(
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      side: const BorderSide(color: Colors.white),
+                    ),
+                    margin: const EdgeInsets.only(bottom: 0.0),
+                    clipBehavior: Clip.antiAlias,
+                    color: Colors.white,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: imageWidgets,
                     ),
                   ),
-                  if (_showAnalysisImage)
-                    Card(
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        side: BorderSide(color: Colors.white),
-                      ),
-                      margin: const EdgeInsets.only(bottom: 0.0),
-                      clipBehavior: Clip.antiAlias,
-                      color: Colors.white,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => FullScreenImagePage(
-                                    imageUrl: (widget.baseUrl != null
-                                            ? '${widget.baseUrl}/'
-                                            : '') +
-                                        signedPath,
-                                  ),
-                                ),
-                              );
-                            },
-                            child: Image.network(
-                              (widget.baseUrl != null ? '${widget.baseUrl}/' : '') +
-                                  signedPath,
-                              width: double.infinity,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return const Padding(
-                                  padding: EdgeInsets.all(12.0),
-                                  child: Text('无法加载图片'),
-                                );
-                              },
-                              loadingBuilder:
-                                  (context, child, loadingProgress) {
-                                if (loadingProgress == null) return child;
-                                return const Center(
-                                  child: Padding(
-                                    padding: EdgeInsets.all(12.0),
-                                    child: CircularProgressIndicator(),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                ],
-              ),
-            );
-          }
+              ],
+            ),
+          );
         }
       }
     }
@@ -673,105 +677,102 @@ class _MistakeQuestionViewState extends State<MistakeQuestionView> with Automati
           if (knowledgePoint is Map && knowledgePoint.containsKey('知识点')) {
             final images = knowledgePoint['知识点'];
             if (images is List && images.isNotEmpty) {
-              final firstImage = images.first;
-              if (firstImage is Map && firstImage.containsKey('signedPath')) {
-                final String? signedPath = firstImage['signedPath'];
-                if (signedPath != null && signedPath.isNotEmpty) {
-                  children.add(
-                    Column(
-                      key: _knowledgeKey,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        OutlinedButton.icon(
-                          onPressed: () {
-                            setState(() {
-                              _showKnowledgePointImage =
-                                  !_showKnowledgePointImage;
-                            });
-                          },
-                          icon: Icon(
-                            _showKnowledgePointImage
-                                ? Icons.visibility_off
-                                : Icons.visibility,
-                            size: 18,
-                          ),
-                          label: Text(
-                            _showKnowledgePointImage
-                                ? '隐藏知识点图片'
-                                : '显示知识点图片',
-                          ),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: Colors.grey[700],
-                            backgroundColor: Colors.white,
-                            side: BorderSide(color: Colors.white),
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+              final List<Widget> imageWidgets = [];
+              for (var img in images) {
+                if (img is Map && img.containsKey('signedPath')) {
+                  final String? signedPath = img['signedPath'];
+                  if (signedPath != null && signedPath.isNotEmpty) {
+                    final imageUrl = (widget.baseUrl != null ? '${widget.baseUrl}/' : '') + signedPath;
+                    imageWidgets.add(
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => FullScreenImagePage(
+                                imageUrl: imageUrl,
+                              ),
                             ),
-                            elevation: 0,
+                          );
+                        },
+                        child: Image.network(
+                          imageUrl,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Padding(
+                              padding: EdgeInsets.all(12.0),
+                              child: Text('无法加载图片'),
+                            );
+                          },
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return const Center(
+                              child: Padding(
+                                padding: EdgeInsets.all(12.0),
+                                child: CircularProgressIndicator(),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    );
+                    imageWidgets.add(const SizedBox(height: 12));
+                  }
+                }
+              }
+
+              if (imageWidgets.isNotEmpty) {
+                // Remove the last SizedBox
+                if (imageWidgets.isNotEmpty) imageWidgets.removeLast();
+
+                children.add(
+                  Column(
+                    key: _knowledgeKey,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      OutlinedButton.icon(
+                        onPressed: () {
+                          setState(() {
+                            _showKnowledgePointImage = !_showKnowledgePointImage;
+                          });
+                        },
+                        icon: Icon(
+                          _showKnowledgePointImage ? Icons.visibility_off : Icons.visibility,
+                          size: 18,
+                        ),
+                        label: Text(
+                          _showKnowledgePointImage ? '隐藏知识点图片' : '显示知识点图片',
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.grey[700],
+                          backgroundColor: Colors.white,
+                          side: const BorderSide(color: Colors.white),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 0,
+                        ),
+                      ),
+                      if (_showKnowledgePointImage)
+                        Card(
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            side: const BorderSide(color: Colors.white),
+                          ),
+                          margin: const EdgeInsets.only(bottom: 0.0),
+                          clipBehavior: Clip.antiAlias,
+                          color: Colors.white,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: imageWidgets,
                           ),
                         ),
-                        if (_showKnowledgePointImage)
-                          Card(
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                              side: BorderSide(color: Colors.white),
-                            ),
-                            margin: const EdgeInsets.only(bottom: 0.0),
-                            clipBehavior: Clip.antiAlias,
-                            color: Colors.white,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                GestureDetector(
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder:
-                                            (context) => FullScreenImagePage(
-                                              imageUrl: (widget.baseUrl != null
-                                                      ? '${widget.baseUrl}/'
-                                                      : '') +
-                                                  signedPath,
-                                            ),
-                                      ),
-                                    );
-                                  },
-                                  child: Image.network(
-                                    (widget.baseUrl != null ? '${widget.baseUrl}/' : '') +
-                                        signedPath,
-                                    width: double.infinity,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) {
-                                      return const Padding(
-                                        padding: EdgeInsets.all(12.0),
-                                        child: Text('无法加载图片'),
-                                      );
-                                    },
-                                    loadingBuilder: (
-                                      context,
-                                      child,
-                                      loadingProgress,
-                                    ) {
-                                      if (loadingProgress == null) return child;
-                                      return const Center(
-                                        child: Padding(
-                                          padding: EdgeInsets.all(12.0),
-                                          child: CircularProgressIndicator(),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                      ],
-                    ),
-                  );
-                }
+                    ],
+                  ),
+                );
               }
             }
           }
@@ -795,7 +796,8 @@ class _MistakeQuestionViewState extends State<MistakeQuestionView> with Automati
       '小节',
       'options',
       '解析按钮',
-      'correct'
+      'correct',
+      '手动排序'
     ];
     children.addAll(
       widget.row.entries.where((entry) => !keys.contains(entry.key)).map((
