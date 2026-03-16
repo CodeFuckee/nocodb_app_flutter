@@ -19,6 +19,10 @@ class _SettingsPageState extends State<SettingsPage> {
   final _tokenController = TextEditingController();
   final _tableIdController = TextEditingController();
   final _viewIdController = TextEditingController();
+  final _familyExpenseTableIdController = TextEditingController();
+  final _familyExpenseMonthlyTableIdController = TextEditingController();
+  final _familyExpenseDailyTableIdController = TextEditingController();
+  final _familyExpenseTypeTableIdController = TextEditingController();
   bool _isLoading = true;
   bool _ignoreSsl = false;
   String? _appVersion;
@@ -38,6 +42,14 @@ class _SettingsPageState extends State<SettingsPage> {
       _tokenController.text = prefs.getString('nocodb_token') ?? '';
       _tableIdController.text = prefs.getString('nocodb_table_id') ?? '';
       _viewIdController.text = prefs.getString('nocodb_view_id') ?? '';
+      _familyExpenseTableIdController.text =
+          prefs.getString('family_expense_table_id') ?? '';
+      _familyExpenseMonthlyTableIdController.text =
+          prefs.getString('family_expense_monthly_table_id') ?? '';
+      _familyExpenseDailyTableIdController.text =
+          prefs.getString('family_expense_daily_table_id') ?? '';
+      _familyExpenseTypeTableIdController.text =
+          prefs.getString('family_expense_type_table_id') ?? '';
       _ignoreSsl = prefs.getBool('nocodb_ignore_ssl') ?? false;
       _appVersion = '${packageInfo.version}+${packageInfo.buildNumber}';
       _isLoading = false;
@@ -50,6 +62,22 @@ class _SettingsPageState extends State<SettingsPage> {
     await prefs.setString('nocodb_token', _tokenController.text);
     await prefs.setString('nocodb_table_id', _tableIdController.text);
     await prefs.setString('nocodb_view_id', _viewIdController.text);
+    await prefs.setString(
+      'family_expense_table_id',
+      _familyExpenseTableIdController.text,
+    );
+    await prefs.setString(
+      'family_expense_monthly_table_id',
+      _familyExpenseMonthlyTableIdController.text,
+    );
+    await prefs.setString(
+      'family_expense_daily_table_id',
+      _familyExpenseDailyTableIdController.text,
+    );
+    await prefs.setString(
+      'family_expense_type_table_id',
+      _familyExpenseTypeTableIdController.text,
+    );
     await prefs.setBool('nocodb_ignore_ssl', _ignoreSsl);
     if (mounted) {
       NotifyUtils.showNotify(context, AppLocalizations.of(context)!.settingsSaved);
@@ -70,6 +98,10 @@ class _SettingsPageState extends State<SettingsPage> {
     _tokenController.dispose();
     _tableIdController.dispose();
     _viewIdController.dispose();
+    _familyExpenseTableIdController.dispose();
+    _familyExpenseMonthlyTableIdController.dispose();
+    _familyExpenseDailyTableIdController.dispose();
+    _familyExpenseTypeTableIdController.dispose();
     super.dispose();
   }
 
@@ -79,6 +111,16 @@ class _SettingsPageState extends State<SettingsPage> {
       appBar: AppBar(
         title: const Text('Settings'),
         automaticallyImplyLeading: false,
+        actions: [
+          TextButton(
+            onPressed: _saveSettings,
+            child: Text(
+              AppLocalizations.of(context)!.save,
+              style: const TextStyle(fontWeight: FontWeight.w700),
+            ),
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -118,6 +160,41 @@ class _SettingsPageState extends State<SettingsPage> {
                     controller: _viewIdController,
                     decoration: InputDecoration(
                       labelText: AppLocalizations.of(context)!.mistakeBookViewId,
+                      border: const OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: _familyExpenseTableIdController,
+                    decoration: InputDecoration(
+                      labelText: AppLocalizations.of(context)!.familyExpenseTableId,
+                      border: const OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: _familyExpenseMonthlyTableIdController,
+                    decoration: InputDecoration(
+                      labelText:
+                          AppLocalizations.of(context)!.familyExpenseMonthlyTableId,
+                      border: const OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: _familyExpenseDailyTableIdController,
+                    decoration: InputDecoration(
+                      labelText:
+                          AppLocalizations.of(context)!.familyExpenseDailyTableId,
+                      border: const OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: _familyExpenseTypeTableIdController,
+                    decoration: InputDecoration(
+                      labelText:
+                          AppLocalizations.of(context)!.familyExpenseTypeTableId,
                       border: const OutlineInputBorder(),
                     ),
                   ),
@@ -162,11 +239,6 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: _saveSettings,
-                    child: const Text('Save'),
-                  ),
-                  const SizedBox(height: 12),
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     title: const Text('GitHub'),

@@ -5,17 +5,20 @@ import 'package:http/io_client.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class NocoDBService {
-  Future<List<Map<String, dynamic>>> fetchRows(int offset, {int limit = 10}) async {
+  Future<List<Map<String, dynamic>>> fetchRowsFromTable(
+    String tableId,
+    int offset, {
+    int limit = 10,
+    String? viewId,
+  }) async {
     final prefs = await SharedPreferences.getInstance();
     final String? baseUrl = prefs.getString('nocodb_url');
     final String? apiToken = prefs.getString('nocodb_token');
-    final String? tableId = prefs.getString('nocodb_table_id');
-    final String? viewId = prefs.getString('nocodb_view_id');
     final bool ignoreSsl = prefs.getBool('nocodb_ignore_ssl') ?? false;
 
     if (baseUrl == null || baseUrl.isEmpty ||
         apiToken == null || apiToken.isEmpty ||
-        tableId == null || tableId.isEmpty) {
+        tableId.isEmpty) {
       throw Exception('Missing NocoDB configuration. Please check settings.');
     }
 
@@ -64,6 +67,13 @@ class NocoDBService {
     } finally {
       client.close();
     }
+  }
+
+  Future<List<Map<String, dynamic>>> fetchRows(int offset, {int limit = 10}) async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? tableId = prefs.getString('nocodb_table_id');
+    final String? viewId = prefs.getString('nocodb_view_id');
+    return fetchRowsFromTable(tableId ?? '', offset, limit: limit, viewId: viewId);
   }
 
   Future<Map<String, dynamic>?> fetchRow(int offset) async {

@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:nocodb_app_flutter/l10n/app_localizations.dart';
 import 'package:nocodb_app_flutter/settings_page.dart';
 import 'package:nocodb_app_flutter/mistake_book_page.dart';
+import 'package:nocodb_app_flutter/family_expense_page.dart';
 import 'package:provider/provider.dart';
 import 'locale_provider.dart';
 
@@ -116,6 +117,7 @@ class _MainScreenState extends State<MainScreen> {
 
   static const List<Widget> _widgetOptions = <Widget>[
     MistakeBookPage(),
+    FamilyExpensePage(),
     SettingsPage(),
   ];
 
@@ -136,6 +138,10 @@ class _MainScreenState extends State<MainScreen> {
           BottomNavigationBarItem(
             icon: const Icon(Icons.book),
             label: AppLocalizations.of(context)!.mistakeBook,
+          ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.payments_outlined),
+            label: AppLocalizations.of(context)!.familyExpense,
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.settings),

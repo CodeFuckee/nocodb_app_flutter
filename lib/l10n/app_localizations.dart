@@ -116,6 +116,78 @@ abstract class AppLocalizations {
   /// **'Mistake Book'**
   String get mistakeBook;
 
+  /// No description provided for @familyExpense.
+  ///
+  /// In en, this message translates to:
+  /// **'Family Expenses'**
+  String get familyExpense;
+
+  /// No description provided for @familyExpenseDaily.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Expenses'**
+  String get familyExpenseDaily;
+
+  /// No description provided for @familyExpenseMonthly.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly Expenses'**
+  String get familyExpenseMonthly;
+
+  /// No description provided for @familyExpenseType.
+  ///
+  /// In en, this message translates to:
+  /// **'Type Expenses'**
+  String get familyExpenseType;
+
+  /// No description provided for @familyExpenseTableId.
+  ///
+  /// In en, this message translates to:
+  /// **'Family Expense Detail Table ID'**
+  String get familyExpenseTableId;
+
+  /// No description provided for @familyExpenseMonthlyTableId.
+  ///
+  /// In en, this message translates to:
+  /// **'Family Expense (Monthly) Table ID'**
+  String get familyExpenseMonthlyTableId;
+
+  /// No description provided for @familyExpenseDailyTableId.
+  ///
+  /// In en, this message translates to:
+  /// **'Family Expense (Daily) Table ID'**
+  String get familyExpenseDailyTableId;
+
+  /// No description provided for @familyExpenseTypeTableId.
+  ///
+  /// In en, this message translates to:
+  /// **'Family Expense (Type) Table ID'**
+  String get familyExpenseTypeTableId;
+
+  /// No description provided for @familyExpenseMissingConfig.
+  ///
+  /// In en, this message translates to:
+  /// **'Please configure family expense table IDs in Settings'**
+  String get familyExpenseMissingConfig;
+
+  /// No description provided for @noDailyData.
+  ///
+  /// In en, this message translates to:
+  /// **'No daily data'**
+  String get noDailyData;
+
+  /// No description provided for @noMonthlyData.
+  ///
+  /// In en, this message translates to:
+  /// **'No monthly data'**
+  String get noMonthlyData;
+
+  /// No description provided for @noTypeData.
+  ///
+  /// In en, this message translates to:
+  /// **'No type data'**
+  String get noTypeData;
+
   /// No description provided for @nocodbUrl.
   ///
   /// In en, this message translates to:

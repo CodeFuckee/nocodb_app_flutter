@@ -18,6 +18,42 @@ class AppLocalizationsZh extends AppLocalizations {
   String get mistakeBook => '错题本';
 
   @override
+  String get familyExpense => '家庭支出';
+
+  @override
+  String get familyExpenseDaily => '日度支出';
+
+  @override
+  String get familyExpenseMonthly => '月度支出';
+
+  @override
+  String get familyExpenseType => '类型支出';
+
+  @override
+  String get familyExpenseTableId => '家庭支出明细表 ID';
+
+  @override
+  String get familyExpenseMonthlyTableId => '家庭支出（月度）表 ID';
+
+  @override
+  String get familyExpenseDailyTableId => '家庭支出（日度）表 ID';
+
+  @override
+  String get familyExpenseTypeTableId => '家庭支出（类型）表 ID';
+
+  @override
+  String get familyExpenseMissingConfig => '请在设置中配置家庭支出相关表 ID';
+
+  @override
+  String get noDailyData => '暂无日度数据';
+
+  @override
+  String get noMonthlyData => '暂无月度数据';
+
+  @override
+  String get noTypeData => '暂无类型数据';
+
+  @override
   String get nocodbUrl => 'NocoDB 网址';
 
   @override

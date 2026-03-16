@@ -18,6 +18,43 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mistakeBook => 'Mistake Book';
 
   @override
+  String get familyExpense => 'Family Expenses';
+
+  @override
+  String get familyExpenseDaily => 'Daily Expenses';
+
+  @override
+  String get familyExpenseMonthly => 'Monthly Expenses';
+
+  @override
+  String get familyExpenseType => 'Type Expenses';
+
+  @override
+  String get familyExpenseTableId => 'Family Expense Detail Table ID';
+
+  @override
+  String get familyExpenseMonthlyTableId => 'Family Expense (Monthly) Table ID';
+
+  @override
+  String get familyExpenseDailyTableId => 'Family Expense (Daily) Table ID';
+
+  @override
+  String get familyExpenseTypeTableId => 'Family Expense (Type) Table ID';
+
+  @override
+  String get familyExpenseMissingConfig =>
+      'Please configure family expense table IDs in Settings';
+
+  @override
+  String get noDailyData => 'No daily data';
+
+  @override
+  String get noMonthlyData => 'No monthly data';
+
+  @override
+  String get noTypeData => 'No type data';
+
+  @override
   String get nocodbUrl => 'NocoDB URL';
 
   @override
