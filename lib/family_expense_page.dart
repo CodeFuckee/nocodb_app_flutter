@@ -491,6 +491,27 @@ class _FamilyExpensePageState extends State<FamilyExpensePage> {
   }
 
   String? _rowType(Map<String, dynamic> row) {
+    String? pickTitleFromMap(Map map) {
+      final v = map['Title'] ?? map['title'] ?? map['Name'] ?? map['name'];
+      if (v == null) return null;
+      final s = v.toString().trim();
+      return s.isEmpty ? null : s;
+    }
+
+    String? pickFromDynamic(dynamic v) {
+      if (v == null) return null;
+      if (v is Map) return pickTitleFromMap(v);
+      if (v is List) {
+        for (final e in v) {
+          final picked = pickFromDynamic(e);
+          if (picked != null && picked.isNotEmpty) return picked;
+        }
+        return null;
+      }
+      final s = v.toString().trim();
+      return s.isEmpty ? null : s;
+    }
+
     const keys = [
       'Title',
       'title',
@@ -506,10 +527,9 @@ class _FamilyExpensePageState extends State<FamilyExpensePage> {
       'Tag',
     ];
     for (final k in keys) {
-      final v = row[k];
-      if (v == null) continue;
-      final s = v.toString().trim();
-      if (s.isNotEmpty) return s;
+      if (!row.containsKey(k)) continue;
+      final picked = pickFromDynamic(row[k]);
+      if (picked != null && picked.isNotEmpty) return picked;
     }
     return null;
   }
@@ -831,8 +851,7 @@ class _FamilyExpensePageState extends State<FamilyExpensePage> {
                 bgColor = amount != null ? Colors.grey[100]! : Colors.white;
               }
 
-              final valueTextColor =
-                  bgColor.computeLuminance() < 0.45 ? Colors.white : Colors.black87;
+              final valueTextColor = bgColor.computeLuminance() < 0.45 ? Colors.white : Colors.black87;
 
               return Material(
                 color: bgColor,
@@ -1563,6 +1582,373 @@ class _FamilyExpensePageState extends State<FamilyExpensePage> {
   }
 }
 
+class _CategoryBillsPage extends StatelessWidget {
+  final String category;
+  final int year;
+  final int month;
+  final List<Map<String, dynamic>> rows;
+
+  const _CategoryBillsPage({
+    required this.category,
+    required this.year,
+    required this.month,
+    required this.rows,
+  });
+
+  String? _pickStringFromDynamic(dynamic v) {
+    if (v == null) return null;
+    if (v is Map) {
+      final candidate = v['Title'] ?? v['title'] ?? v['Name'] ?? v['name'];
+      if (candidate == null) return null;
+      final s = candidate.toString().trim();
+      return s.isEmpty ? null : s;
+    }
+    if (v is List) {
+      for (final e in v) {
+        final picked = _pickStringFromDynamic(e);
+        if (picked != null && picked.isNotEmpty) return picked;
+      }
+      return null;
+    }
+    final s = v.toString().trim();
+    return s.isEmpty ? null : s;
+  }
+
+  String _rowTitle(Map<String, dynamic> row) {
+    const keys = ['商品', 'Title', '标题', '名称', '用途', '分类', '项目', 'Id', 'id'];
+    for (final k in keys) {
+      final v = row[k];
+      if (v == null) continue;
+      if (v is Map) {
+        if (v.containsKey('Title')) {
+          final t = v['Title']?.toString().trim();
+          if (t != null && t.isNotEmpty) return t;
+        }
+        continue;
+      }
+      final s = v.toString().trim();
+      if (s.isNotEmpty) return s;
+    }
+    return '记录';
+  }
+
+  String? _rowUser(Map<String, dynamic> row) {
+    const keys = [
+      '用户',
+      'user',
+      'User',
+      '付款人',
+      '支付人',
+      '成员',
+      'member',
+      'Member',
+      'person',
+      'Person',
+    ];
+    for (final k in keys) {
+      if (!row.containsKey(k)) continue;
+      final picked = _pickStringFromDynamic(row[k]);
+      if (picked != null && picked.isNotEmpty) return picked;
+    }
+    return null;
+  }
+
+  String? _rowPayMethod(Map<String, dynamic> row) {
+    const keys = [
+      'Type (from 源文件)',
+      '支付方式',
+      '支付渠道',
+      '支付',
+      'payment',
+      'Payment',
+      'payMethod',
+      'PayMethod',
+      'channel',
+      'Channel',
+      '账户',
+      'account',
+      'Account',
+    ];
+    for (final k in keys) {
+      if (!row.containsKey(k)) continue;
+      final picked = _pickStringFromDynamic(row[k]);
+      if (picked != null && picked.isNotEmpty) return picked;
+    }
+    return null;
+  }
+
+  Widget _badge(BuildContext context, String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.grey[200],
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: Colors.grey[300]!),
+      ),
+      child: Text(
+        text,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: Colors.grey[900],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final ms =
+        '${year.toString().padLeft(4, '0')}-${month.toString().padLeft(2, '0')}';
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('$category  $ms'),
+      ),
+      body: ListView.separated(
+        itemCount: rows.length,
+        separatorBuilder: (context, index) => const Divider(height: 1),
+        itemBuilder: (context, index) {
+          final r = rows[index];
+          final title = _rowTitle(r);
+          final dayStr = _MonthlyDailyCalendarPageState._rowDay(r);
+          final amount = _MonthlyDailyCalendarPageState._rowAmount(r) ?? 0.0;
+          final user = _rowUser(r);
+          final payMethod = _rowPayMethod(r);
+          final datePart = () {
+            if (dayStr == null) return '';
+            final dt = _MonthlyDailyCalendarPageState._tryParseIsoDay(dayStr);
+            if (dt == null) return dayStr;
+            return '${dt.year.toString().padLeft(4, '0')}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
+          }();
+          final parts = <String>[];
+          if (datePart.isNotEmpty) parts.add(datePart);
+          parts.add('¥${amount.toStringAsFixed(2)}');
+          if (user != null && user.isNotEmpty) parts.add(user);
+          if (payMethod != null && payMethod.isNotEmpty) parts.add(payMethod);
+          return ListTile(
+            title: Text(
+              title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+            subtitle: Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: [
+                  for (final p in parts) _badge(context, p),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+class _DayBillsPage extends StatelessWidget {
+  final DateTime date;
+  final List<Map<String, dynamic>> rows;
+
+  const _DayBillsPage({
+    required this.date,
+    required this.rows,
+  });
+
+  String? _pickStringFromDynamic(dynamic v) {
+    if (v == null) return null;
+    if (v is Map) {
+      final candidate = v['Title'] ?? v['title'] ?? v['Name'] ?? v['name'];
+      if (candidate == null) return null;
+      final s = candidate.toString().trim();
+      return s.isEmpty ? null : s;
+    }
+    if (v is List) {
+      for (final e in v) {
+        final picked = _pickStringFromDynamic(e);
+        if (picked != null && picked.isNotEmpty) return picked;
+      }
+      return null;
+    }
+    final s = v.toString().trim();
+    return s.isEmpty ? null : s;
+  }
+
+  String _rowTitle(Map<String, dynamic> row) {
+    const keys = ['商品', 'Title', '标题', '名称', '用途', '分类', '项目', 'Id', 'id'];
+    for (final k in keys) {
+      final v = row[k];
+      if (v == null) continue;
+      if (v is Map) {
+        if (v.containsKey('Title')) {
+          final t = v['Title']?.toString().trim();
+          if (t != null && t.isNotEmpty) return t;
+        }
+        continue;
+      }
+      final s = v.toString().trim();
+      if (s.isNotEmpty) return s;
+    }
+    return '记录';
+  }
+
+  String? _rowUser(Map<String, dynamic> row) {
+    const keys = [
+      '用户',
+      'user',
+      'User',
+      '付款人',
+      '支付人',
+      '成员',
+      'member',
+      'Member',
+      'person',
+      'Person',
+    ];
+    for (final k in keys) {
+      if (!row.containsKey(k)) continue;
+      final picked = _pickStringFromDynamic(row[k]);
+      if (picked != null && picked.isNotEmpty) return picked;
+    }
+    return null;
+  }
+
+  String? _rowPayMethod(Map<String, dynamic> row) {
+    const keys = [
+      'Type (from 源文件)',
+      '支付方式',
+      '支付渠道',
+      '支付',
+      'payment',
+      'Payment',
+      'payMethod',
+      'PayMethod',
+      'channel',
+      'Channel',
+      '账户',
+      'account',
+      'Account',
+    ];
+    for (final k in keys) {
+      if (!row.containsKey(k)) continue;
+      final picked = _pickStringFromDynamic(row[k]);
+      if (picked != null && picked.isNotEmpty) return picked;
+    }
+    return null;
+  }
+
+  Widget _badge(String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.grey[200],
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: Colors.grey[300]!),
+      ),
+      child: Text(
+        text,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: Colors.grey[900],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final ds =
+        '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+    final total = rows.fold<double>(
+      0.0,
+      (s, r) => s + ((_MonthlyDailyCalendarPageState._rowAmount(r) ?? 0.0).abs()),
+    );
+    final isZh = Localizations.localeOf(context).languageCode == 'zh';
+    final emptyText = isZh ? '暂无账单' : 'No bills';
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(ds),
+      ),
+      body: rows.isEmpty
+          ? Center(
+              child: Text(
+                emptyText,
+                style: TextStyle(color: Colors.grey[600]),
+              ),
+            )
+          : ListView.separated(
+              itemCount: rows.length + 1,
+              separatorBuilder: (context, index) => const Divider(height: 1),
+              itemBuilder: (context, index) {
+                if (index == 0) {
+                  return Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            isZh ? '合计' : 'Total',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w700,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          '¥${total.toStringAsFixed(2)}',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w800,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                final r = rows[index - 1];
+                final title = _rowTitle(r);
+                final amount = _MonthlyDailyCalendarPageState._rowAmount(r) ?? 0.0;
+                final user = _rowUser(r);
+                final payMethod = _rowPayMethod(r);
+                final parts = <String>[];
+                parts.add('¥${amount.toStringAsFixed(2)}');
+                if (user != null && user.isNotEmpty) parts.add(user);
+                if (payMethod != null && payMethod.isNotEmpty) parts.add(payMethod);
+
+                return ListTile(
+                  title: Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  subtitle: parts.isEmpty
+                      ? null
+                      : Padding(
+                          padding: const EdgeInsets.only(top: 6),
+                          child: Wrap(
+                            spacing: 6,
+                            runSpacing: 6,
+                            children: [
+                              for (final p in parts) _badge(p),
+                            ],
+                          ),
+                        ),
+                );
+              },
+            ),
+    );
+  }
+}
 class _PieSlice {
   final double value;
   final Color color;
@@ -1633,6 +2019,7 @@ class _TypePieChartPainter extends CustomPainter {
           _PieLabelInfo(
             label: slice.label,
             color: slice.color,
+            value: v,
             midAngle: mid,
             side: side,
           ),
@@ -1660,16 +2047,29 @@ class _TypePieChartPainter extends CustomPainter {
       final anchorX =
           info.side == _PieLabelSide.right ? center.dx + radius + 18 : center.dx - radius - 18;
 
+      final percent = (info.value / total) * 100;
+      final percentText = percent.toStringAsFixed(1);
+      final amountText = info.value.toStringAsFixed(2);
       final tp = TextPainter(
         text: TextSpan(
-          text: info.label,
           style: const TextStyle(
             color: Colors.black87,
             fontSize: 11,
             fontWeight: FontWeight.w700,
           ),
+          children: [
+            TextSpan(text: '${info.label}\n'),
+            TextSpan(
+              text: '$percentText%  ¥$amountText',
+              style: TextStyle(
+                color: Colors.grey[800],
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
         ),
-        maxLines: 1,
+        maxLines: 2,
         ellipsis: '…',
         textDirection: TextDirection.ltr,
         textAlign: info.side == _PieLabelSide.right ? TextAlign.left : TextAlign.right,
@@ -1691,8 +2091,22 @@ class _TypePieChartPainter extends CustomPainter {
       }
     }
 
-    _layoutPieLabels(left, minY: 10, maxY: size.height - 10, gap: 14);
-    _layoutPieLabels(right, minY: 10, maxY: size.height - 10, gap: 14);
+    double leftGap = 14;
+    double rightGap = 14;
+    if (left.isNotEmpty) {
+      leftGap = left
+              .map((e) => e.textPainter.height)
+              .reduce((a, b) => a > b ? a : b) +
+          6;
+    }
+    if (right.isNotEmpty) {
+      rightGap = right
+              .map((e) => e.textPainter.height)
+              .reduce((a, b) => a > b ? a : b) +
+          6;
+    }
+    _layoutPieLabels(left, minY: 10, maxY: size.height - 10, gap: leftGap);
+    _layoutPieLabels(right, minY: 10, maxY: size.height - 10, gap: rightGap);
 
     for (final l in [...left, ...right]) {
       dotPaint.color = l.info.color;
@@ -1739,12 +2153,14 @@ enum _PieLabelSide { left, right }
 class _PieLabelInfo {
   final String label;
   final Color color;
+  final double value;
   final double midAngle;
   final _PieLabelSide side;
 
   const _PieLabelInfo({
     required this.label,
     required this.color,
+    required this.value,
     required this.midAngle,
     required this.side,
   });
@@ -1826,10 +2242,96 @@ class _MonthlyDailyCalendarPageState extends State<_MonthlyDailyCalendarPage> {
 
   final _service = NocoDBService();
   bool _isLoading = false;
+  bool _isDetailLoading = false;
   String? _error;
+  String? _detailError;
   late DateTime _focusedMonth;
   late int _heatmapMode;
   List<Map<String, dynamic>> _dailyRows = [];
+  List<Map<String, dynamic>> _detailRows = [];
+  bool _didScheduleInitialLoad = false;
+
+  String _rowTitleInDetail(Map<String, dynamic> row) {
+    const keys = ['商品', 'Title', '标题', '名称', '用途', '分类', '项目', 'Id', 'id'];
+    for (final k in keys) {
+      final v = row[k];
+      if (v == null) continue;
+      if (v is Map) {
+        if (v.containsKey('Title')) {
+          final t = v['Title']?.toString().trim();
+          if (t != null && t.isNotEmpty) return t;
+        }
+        continue;
+      }
+      final s = v.toString().trim();
+      if (s.isNotEmpty) return s;
+    }
+    return '记录';
+  }
+
+  String? _pickStringFromDynamic(dynamic v) {
+    if (v == null) return null;
+    if (v is Map) {
+      final candidate = v['Title'] ?? v['title'] ?? v['Name'] ?? v['name'];
+      if (candidate == null) return null;
+      final s = candidate.toString().trim();
+      return s.isEmpty ? null : s;
+    }
+    if (v is List) {
+      for (final e in v) {
+        final picked = _pickStringFromDynamic(e);
+        if (picked != null && picked.isNotEmpty) return picked;
+      }
+      return null;
+    }
+    final s = v.toString().trim();
+    return s.isEmpty ? null : s;
+  }
+
+  String? _rowUserInDetail(Map<String, dynamic> row) {
+    const keys = [
+      '用户',
+      'user',
+      'User',
+      '付款人',
+      '支付人',
+      '成员',
+      'member',
+      'Member',
+      'person',
+      'Person',
+    ];
+    for (final k in keys) {
+      if (!row.containsKey(k)) continue;
+      final picked = _pickStringFromDynamic(row[k]);
+      if (picked != null && picked.isNotEmpty) return picked;
+    }
+    return null;
+  }
+
+  String? _rowPayMethodInDetail(Map<String, dynamic> row) {
+    const keys = [
+      'Type (from 源文件)',
+      '支付方式',
+      '支付渠道',
+      '支付',
+      'payment',
+      'Payment',
+      'payMethod',
+      'PayMethod',
+      'channel',
+      'Channel',
+      '账户',
+      'account',
+      'Account',
+    ];
+    for (final k in keys) {
+      if (!row.containsKey(k)) continue;
+      final picked = _pickStringFromDynamic(row[k]);
+      if (picked != null && picked.isNotEmpty) return picked;
+    }
+    return null;
+  }
 
   @override
   void initState() {
@@ -1837,9 +2339,20 @@ class _MonthlyDailyCalendarPageState extends State<_MonthlyDailyCalendarPage> {
     _focusedMonth = DateTime(widget.initialMonth.year, widget.initialMonth.month);
     _heatmapMode = widget.initialHeatmapMode % 3;
     _dailyRows = List<Map<String, dynamic>>.from(widget.initialDailyRows);
-    if (_dailyRows.isEmpty) {
-      _loadDaily();
-    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_didScheduleInitialLoad) return;
+    _didScheduleInitialLoad = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (_dailyRows.isEmpty) {
+        _loadDaily();
+      }
+      _loadDetails();
+    });
   }
 
   Future<void> _loadDaily() async {
@@ -1883,6 +2396,51 @@ class _MonthlyDailyCalendarPageState extends State<_MonthlyDailyCalendarPage> {
       if (mounted) {
         setState(() {
           _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _loadDetails() async {
+    if (_isDetailLoading) return;
+    final missingConfig = AppLocalizations.of(context)!.familyExpenseMissingConfig;
+    setState(() {
+      _isDetailLoading = true;
+      _detailError = null;
+    });
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final tableId = (prefs.getString('family_expense_table_id') ?? '').trim();
+      if (tableId.isEmpty) {
+        throw missingConfig;
+      }
+
+      final List<Map<String, dynamic>> all = [];
+      int offset = 0;
+      const int limit = 200;
+      for (int i = 0; i < 50; i++) {
+        final batch = await _service.fetchRowsFromTable(
+          tableId,
+          offset,
+          limit: limit,
+        );
+        all.addAll(batch);
+        offset += batch.length;
+        if (batch.length < limit) break;
+      }
+      if (!mounted) return;
+      setState(() {
+        _detailRows = all;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _detailError = e.toString();
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isDetailLoading = false;
         });
       }
     }
@@ -1952,6 +2510,50 @@ class _MonthlyDailyCalendarPageState extends State<_MonthlyDailyCalendarPage> {
     return null;
   }
 
+  static String? _rowType(Map<String, dynamic> row) {
+    String? pickTitleFromMap(Map map) {
+      final v = map['Title'] ?? map['title'] ?? map['Name'] ?? map['name'];
+      if (v == null) return null;
+      final s = v.toString().trim();
+      return s.isEmpty ? null : s;
+    }
+
+    String? pickFromDynamic(dynamic v) {
+      if (v == null) return null;
+      if (v is Map) return pickTitleFromMap(v);
+      if (v is List) {
+        for (final e in v) {
+          final picked = pickFromDynamic(e);
+          if (picked != null && picked.isNotEmpty) return picked;
+        }
+        return null;
+      }
+      final s = v.toString().trim();
+      return s.isEmpty ? null : s;
+    }
+
+    const keys = [
+      'Title',
+      'title',
+      '类型',
+      '支出类型',
+      '分类',
+      '标签',
+      'type',
+      'Type',
+      'category',
+      'Category',
+      'tag',
+      'Tag',
+    ];
+    for (final k in keys) {
+      if (!row.containsKey(k)) continue;
+      final picked = pickFromDynamic(row[k]);
+      if (picked != null && picked.isNotEmpty) return picked;
+    }
+    return null;
+  }
+
   Map<DateTime, double> _dailyTotals() {
     final Map<DateTime, double> totals = {};
     for (final r in _dailyRows) {
@@ -1964,6 +2566,64 @@ class _MonthlyDailyCalendarPageState extends State<_MonthlyDailyCalendarPage> {
       totals[key] = (totals[key] ?? 0) + amount;
     }
     return totals;
+  }
+
+  Map<String, double> _typeTotalsInMonth(int year, int month) {
+    final Map<String, double> totals = {};
+    final isZh = Localizations.localeOf(context).languageCode == 'zh';
+    final uncategorized = isZh ? '未分类' : 'Uncategorized';
+    for (final r in _detailRows) {
+      final dayStr = _rowDay(r);
+      final amount = _rowAmount(r);
+      if (dayStr == null || amount == null) continue;
+      final dt = _tryParseIsoDay(dayStr);
+      if (dt == null || dt.year != year || dt.month != month) continue;
+      final type = (_rowType(r) ?? '').trim();
+      final key = type.isEmpty ? uncategorized : type;
+      totals[key] = (totals[key] ?? 0) + amount;
+    }
+    return totals;
+  }
+
+  List<_PieSlice> _buildTypePieSlicesInMonth(int year, int month) {
+    final totals = _typeTotalsInMonth(year, month);
+    final entries = totals.entries.where((e) => e.value != 0).toList()..sort((a, b) => b.value.compareTo(a.value));
+    const int pieTopN = 6;
+    final Map<String, Color> typeColors = {};
+    final int topCount = min(pieTopN, entries.length);
+    for (int i = 0; i < topCount; i++) {
+      typeColors[entries[i].key] =
+          Colors.primaries[i % Colors.primaries.length].shade600;
+    }
+    final othersColor = Colors.grey[600]!;
+    final List<_PieSlice> pieSlices = [];
+    double pieOtherValue = 0.0;
+
+    final isZh = Localizations.localeOf(context).languageCode == 'zh';
+    for (int i = 0; i < entries.length; i++) {
+      final e = entries[i];
+      if (i < topCount) {
+        pieSlices.add(
+          _PieSlice(
+            value: e.value,
+            color: typeColors[e.key]!,
+            label: e.key,
+          ),
+        );
+      } else {
+        pieOtherValue += e.value;
+      }
+    }
+    if (pieOtherValue != 0) {
+      pieSlices.add(
+        _PieSlice(
+          value: pieOtherValue,
+          color: othersColor,
+          label: isZh ? '其他' : 'Others',
+        ),
+      );
+    }
+    return pieSlices;
   }
 
   int _toHeatLevelInRange(double value, double min, double max) {
@@ -2109,23 +2769,12 @@ class _MonthlyDailyCalendarPageState extends State<_MonthlyDailyCalendarPage> {
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: _loadDaily,
+        onRefresh: () async {
+          await Future.wait([_loadDaily(), _loadDetails()]);
+        },
         child: ListView(
           padding: const EdgeInsets.symmetric(vertical: 12),
           children: [
-            if (_error != null && _dailyRows.isEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Text(
-                  _error!,
-                  style: const TextStyle(color: Colors.red),
-                ),
-              )
-            else if (_isLoading && _dailyRows.isEmpty)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 24),
-                child: Center(child: CircularProgressIndicator()),
-              ),
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
               child: Row(
@@ -2196,46 +2845,42 @@ class _MonthlyDailyCalendarPageState extends State<_MonthlyDailyCalendarPage> {
                     borderRadius: BorderRadius.circular(10),
                     child: InkWell(
                       borderRadius: BorderRadius.circular(10),
-                      onTap: amount == null
-                          ? null
-                          : () {
-                              showModalBottomSheet(
-                                context: context,
-                                builder: (context) {
-                                  final ds =
-                                      '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-                                  return SafeArea(
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(16.0),
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.stretch,
-                                        children: [
-                                          Text(
-                                            ds,
-                                            style: const TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w700,
-                                              color: Colors.black87,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 8),
-                                          Text(
-                                            '¥${amount.toStringAsFixed(2)}',
-                                            style: const TextStyle(
-                                              fontSize: 22,
-                                              fontWeight: FontWeight.w700,
-                                              color: Colors.black87,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  );
-                                },
-                              );
-                            },
+                      onTap: () {
+                        if (_isDetailLoading && _detailRows.isEmpty) {
+                          showModalBottomSheet(
+                            context: context,
+                            builder: (_) => const SafeArea(
+                              child: Padding(
+                                padding: EdgeInsets.all(16.0),
+                                child: Center(child: CircularProgressIndicator()),
+                              ),
+                            ),
+                          );
+                          return;
+                        }
+                        final dayRows = _detailRows.where((r) {
+                          final dayStr = _rowDay(r);
+                          if (dayStr == null) return false;
+                          final dt = _tryParseIsoDay(dayStr);
+                          if (dt == null) return false;
+                          return dt.year == date.year &&
+                              dt.month == date.month &&
+                              dt.day == date.day;
+                        }).toList()
+                          ..sort((a, b) {
+                            final va = (_rowAmount(a) ?? 0.0).abs();
+                            final vb = (_rowAmount(b) ?? 0.0).abs();
+                            return vb.compareTo(va);
+                          });
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => _DayBillsPage(
+                              date: date,
+                              rows: dayRows,
+                            ),
+                          ),
+                        );
+                      },
                       child: Container(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(10),
@@ -2271,6 +2916,315 @@ class _MonthlyDailyCalendarPageState extends State<_MonthlyDailyCalendarPage> {
                   );
                 },
               ),
+            ),
+            if (_error != null && _dailyRows.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Text(
+                  _error!,
+                  style: const TextStyle(color: Colors.red),
+                ),
+              )
+            else if (_isLoading && _dailyRows.isEmpty)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 24),
+                child: Center(child: CircularProgressIndicator()),
+              ),
+            Builder(
+              builder: (context) {
+                if (_isDetailLoading && _detailRows.isEmpty) {
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                }
+                if (_detailError != null && _detailRows.isEmpty) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Text(
+                      _detailError!,
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                  );
+                }
+                final slices = _buildTypePieSlicesInMonth(year, month);
+                if (slices.isEmpty) return const SizedBox.shrink();
+                final totalsMap = _typeTotalsInMonth(year, month);
+                final entries = totalsMap.entries
+                    .where((e) => e.value != 0)
+                    .toList()
+                  ..sort((a, b) => b.value.compareTo(a.value));
+                final double sumTotal =
+                    entries.fold(0.0, (s, e) => s + e.value.abs());
+                const int pieTopN = 6;
+                final Map<String, Color> typeColors = {};
+                final int topCount = min(pieTopN, entries.length);
+                for (int i = 0; i < topCount; i++) {
+                  typeColors[entries[i].key] = Colors
+                      .primaries[i % Colors.primaries.length]
+                      .shade600;
+                }
+                final othersColor = Colors.grey[600]!;
+                final monthRows = _detailRows.where((r) {
+                  final dayStr = _rowDay(r);
+                  final amount = _rowAmount(r);
+                  if (dayStr == null || amount == null) return false;
+                  final dt = _tryParseIsoDay(dayStr);
+                  return dt != null && dt.year == year && dt.month == month;
+                }).toList()
+                  ..sort((a, b) {
+                    final va = _rowAmount(a) ?? 0.0;
+                    final vb = _rowAmount(b) ?? 0.0;
+                    return vb.compareTo(va);
+                  });
+                final top10 = monthRows.take(10).toList();
+                final top10Sum = top10.fold<double>(
+                  0.0,
+                  (s, r) => s + ((_rowAmount(r) ?? 0.0).abs()),
+                );
+                final monthSum = monthRows.fold<double>(
+                  0.0,
+                  (s, r) => s + ((_rowAmount(r) ?? 0.0).abs()),
+                );
+                final top10Percent =
+                    monthSum > 0 ? (top10Sum * 100 / monthSum) : 0.0;
+                final isZh = Localizations.localeOf(context).languageCode == 'zh';
+                final topTitle = isZh ? '本月最高支出 Top 10' : 'Top 10 Expenses';
+                return Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.grey[200]!),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: Text(
+                                AppLocalizations.of(context)!.familyExpenseType,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.black87,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                              child: LayoutBuilder(
+                                builder: (context, constraints) {
+                                  final w = constraints.maxWidth.isFinite
+                                      ? constraints.maxWidth
+                                      : 320.0;
+                                  final chartWidth = min(w, 420.0);
+                                  return Center(
+                                    child: SizedBox(
+                                      width: chartWidth,
+                                      height: 240,
+                                      child: _TypePieChart(slices: slices),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                              child: Column(
+                                children: [
+                                  for (final e in entries)
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(vertical: 6),
+                                      child: Material(
+                                        color: Colors.transparent,
+                                        child: InkWell(
+                                          borderRadius: BorderRadius.circular(8),
+                                          onTap: () {
+                                            final target = e.key;
+                                            final isZh = Localizations.localeOf(context).languageCode == 'zh';
+                                            final uncategorized = isZh ? '未分类' : 'Uncategorized';
+                                            final filtered = _detailRows.where((r) {
+                                              final dayStr = _rowDay(r);
+                                              final amount = _rowAmount(r);
+                                              if (dayStr == null || amount == null) return false;
+                                              final dt = _tryParseIsoDay(dayStr);
+                                              if (dt == null || dt.year != year || dt.month != month) return false;
+                                              final t = (_rowType(r) ?? '').trim();
+                                              if (target == uncategorized) {
+                                                return t.isEmpty;
+                                              }
+                                              return t == target;
+                                            }).toList()
+                                              ..sort((a, b) {
+                                                final va = _rowAmount(a) ?? 0.0;
+                                                final vb = _rowAmount(b) ?? 0.0;
+                                                return vb.compareTo(va);
+                                              });
+                                            Navigator.of(context).push(
+                                              MaterialPageRoute(
+                                                builder: (_) => _CategoryBillsPage(
+                                                  category: e.key,
+                                                  year: year,
+                                                  month: month,
+                                                  rows: filtered,
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+                                            child: Row(
+                                              children: [
+                                                Container(
+                                                  width: 10,
+                                                  height: 10,
+                                                  decoration: BoxDecoration(
+                                                    color: typeColors[e.key] ?? othersColor,
+                                                    shape: BoxShape.circle,
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Expanded(
+                                                  child: Text(
+                                                    e.key,
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
+                                                    style: const TextStyle(
+                                                      color: Colors.black87,
+                                                      fontWeight: FontWeight.w600,
+                                                    ),
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Text(
+                                                  '${sumTotal > 0 ? (e.value.abs() * 100 / sumTotal).toStringAsFixed(1) : '0.0'}%  ¥${e.value.abs().toStringAsFixed(2)}',
+                                                  style: TextStyle(
+                                                    color: Colors.grey[800],
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    if (top10.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.grey[200]!),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(12.0),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        topTitle,
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.black87,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                    Text(
+                                      '¥${top10Sum.toStringAsFixed(2)} (${top10Percent.toStringAsFixed(1)}%)',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey[800],
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              for (final r in top10)
+                                Padding(
+                                  padding: const EdgeInsets.fromLTRB(12, 6, 12, 6),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              _rowTitleInDetail(r),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: const TextStyle(
+                                                color: Colors.black87,
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Builder(
+                                              builder: (_) {
+                                                final parts = <String>[];
+                                                final dayStr = _rowDay(r);
+                                                if (dayStr != null) {
+                                                  final dt = _tryParseIsoDay(dayStr);
+                                                  final ds = dt == null
+                                                      ? dayStr
+                                                      : '${dt.year.toString().padLeft(4, '0')}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
+                                                  if (ds.isNotEmpty) parts.add(ds);
+                                                }
+                                                final user = _rowUserInDetail(r);
+                                                if (user != null && user.isNotEmpty) parts.add(user);
+                                                final payMethod = _rowPayMethodInDetail(r);
+                                                if (payMethod != null && payMethod.isNotEmpty) parts.add(payMethod);
+                                                if (parts.isEmpty) return const SizedBox.shrink();
+                                                return Text(
+                                                  parts.join(' · '),
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                  style: TextStyle(
+                                                    color: Colors.grey[700],
+                                                    fontSize: 12,
+                                                  ),
+                                                );
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        '¥${(_rowAmount(r) ?? 0.0).toStringAsFixed(2)}',
+                                        style: const TextStyle(
+                                          color: Colors.black87,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              const SizedBox(height: 6),
+                            ],
+                          ),
+                        ),
+                      ),
+                  ],
+                );
+              },
             ),
           ],
         ),
