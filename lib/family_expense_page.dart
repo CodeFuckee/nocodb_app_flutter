@@ -907,24 +907,37 @@ class _FamilyExpensePageState extends State<FamilyExpensePage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          '$dayNumber',
-                          style: TextStyle(
-                            color: valueTextColor,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 11,
+                        SizedBox(
+                          height: 14,
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              '$dayNumber',
+                              style: TextStyle(
+                                color: valueTextColor,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 11,
+                              ),
+                            ),
                           ),
                         ),
                         const SizedBox(height: 2),
                         if (amount != null)
-                          Text(
-                            '¥${amount.toStringAsFixed(0)}',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: valueTextColor,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 10,
+                          SizedBox(
+                            height: 14,
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                '¥${amount.toStringAsFixed(0)}',
+                                maxLines: 1,
+                                style: TextStyle(
+                                  color: valueTextColor,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 10,
+                                ),
+                              ),
                             ),
                           ),
                       ],
@@ -1150,13 +1163,19 @@ class _FamilyExpensePageState extends State<FamilyExpensePage> {
                         ),
                         const Spacer(),
                         if (amount != null)
-                          Text(
-                            '¥${amount.toStringAsFixed(0)}',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: valueTextColor,
-                              fontWeight: FontWeight.w700,
+                          SizedBox(
+                            height: 18,
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                '¥${amount.toStringAsFixed(0)}',
+                                maxLines: 1,
+                                style: TextStyle(
+                                  color: valueTextColor,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
                             ),
                           ),
                       ],
@@ -2890,23 +2909,36 @@ class _MonthlyDailyCalendarPageState extends State<_MonthlyDailyCalendarPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              '$dayNumber',
-                              style: TextStyle(
-                                color: valueTextColor,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 11,
+                            SizedBox(
+                              height: 14,
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  '$dayNumber',
+                                  style: TextStyle(
+                                    color: valueTextColor,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 11,
+                                  ),
+                                ),
                               ),
                             ),
                             const Spacer(),
                             if (amount != null)
-                              Text(
-                                '¥${amount.toStringAsFixed(0)}',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  color: valueTextColor,
-                                  fontWeight: FontWeight.w700,
+                              SizedBox(
+                                height: 16,
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    '¥${amount.toStringAsFixed(0)}',
+                                    maxLines: 1,
+                                    style: TextStyle(
+                                      color: valueTextColor,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
                                 ),
                               ),
                           ],
@@ -3146,12 +3178,18 @@ class _MonthlyDailyCalendarPageState extends State<_MonthlyDailyCalendarPage> {
                                         ),
                                       ),
                                     ),
-                                    Text(
-                                      '¥${top10Sum.toStringAsFixed(2)} (${top10Percent.toStringAsFixed(1)}%)',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey[800],
-                                        fontWeight: FontWeight.w700,
+                                    Flexible(
+                                      child: FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        alignment: Alignment.centerRight,
+                                        child: Text(
+                                          '¥${top10Sum.toStringAsFixed(2)} (${top10Percent.toStringAsFixed(1)}%)',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey[800],
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
                                       ),
                                     ),
                                   ],
